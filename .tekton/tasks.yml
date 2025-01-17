@@ -55,3 +55,21 @@ spec:
           python -m pip install --upgrade pip wheel
           pip install -r requirements.txt
           nosetests $(params.args)
+--- 
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: deploy-to-openshift
+spec:
+  params:
+    - name: app-name
+      description: The name of the application to deploy
+    - name: build-image
+      description: The image to deploy
+  steps:
+    - name: deploy
+      image: 'quay.io/openshift/origin-cli:latest'
+      script: |
+        #!/bin/sh
+        set -eux
+        oc create deployment ${params.app-name} --image=${params.build-image} --dry-run=client -o yaml | oc apply -f -
